@@ -55,18 +55,29 @@ app.use('/static', express.static('public'));
 CUSTOM MIDDLEWARES
 ********************/
 
+
+const my_middleware = (req,res,next) =>{
+  res.locals.temp = req.session.flashMessage;
+  delete req.session.flashMessage;
+  next();
+}
+
 const email_valid = check('email', 'Formatul email-ului e incorect').isEmail();
 const name_valid = check('nume', 'Numele este prea scurt').isLength({ min: 3 });
 
 // ....
 
-/*********   
+/*********
  RUTE
 **********/
 
 
-app.get('/', (req, res) => {  
-  res.render('pages/index', {nume: req.cookies.nume})
+app.get('/', my_middleware,(req, res) => {  
+  res.render('pages/index', {
+    nume: req.cookies.nume,
+    welcome: req.session.flashMessage,
+    
+  })
 });
 
 app.get('/hello', (req, res) => {
@@ -82,7 +93,7 @@ app.post('/hello',email_valid,name_valid,(req,res) => {
   const errors = validationResult(req);
   if(errors.isEmpty()){
     req.session.flashMessage = 'Excelent, te-ai inscris cu email-ul ' + req.body.email;
-
+    
     res.cookie('nume', req.body.nume);
     res.redirect('/');
   }

@@ -2,6 +2,12 @@
 <title>Welcome</title>
 <% include ../partials/header.ejs %>
 
+<% if(typeof temp !== 'undefined') { %>
+  <div class="alert alert-success" role="alert"> <%= temp %></div> 
+  <% } %>
+
+
+
   <div class="row">
     <div class="col-md-12 text-center"> 
       <% if (typeof nume !== 'undefined') { %>
