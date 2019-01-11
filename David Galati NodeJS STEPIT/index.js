@@ -86,7 +86,7 @@ function fileFilter(req, file, cb){
   }
 }
 const storage = multer.memoryStorage();
-const upload = multer({ storage: storage, fileFilter: fileFilter, limits: {fileSize: 50000} });
+const upload = multer({ storage: storage, fileFilter: fileFilter, limits: {fileSize: 500000} });
 
 
 // seteaza directorul "/public" pentru a afisa asset-uri statice
