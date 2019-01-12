@@ -7,11 +7,6 @@ const app = express(); // initializeaza o aplicatie Express
 const cookieParser = require('cookie-parser'); // citeste datele din cookies
 const expressSession = require('express-session'); // managementul sesiunilor
 const { check, validationResult } = require('express-validator/check'); // validare
-// const morgan = require('morgan');
-
-// const morganBody = require('morgan-body');
-
-
 const fs = require('fs');
 
 const multer = require('multer');
@@ -23,6 +18,9 @@ let port = process.env.PORT;
 if (port == null || port == "") {
   port = 8000;
 }
+
+
+// const queries = require('./data/recipes_queries.js');
 
 // seteaza template engine-ul aplicatiei
 app.set('view engine', 'ejs');
@@ -38,9 +36,6 @@ STANDARD MIDDLEWARES
 app.use(express.urlencoded({extended: true}));
 
 app.use(express.json());
-
-// app.use(morgan('combined'));
-// morganBody(app);
 
 /**
  * Middleware-ul pentru citirea si parsarea cookie-urilor
@@ -58,26 +53,11 @@ app.use(expressSession({
   resave: false
 }));
 
-
-/**
- * Multer configuration
- */
-
-// Configurare Multer - Varianta 1
-// const upload = multer({ dest: 'public/uploads/' });
+// seteaza directorul "/public" pentru a afisa asset-uri statice
+app.use('/static', express.static('public'));
 
 
-// Configurare Multer - Varianta 2 
-// const storage = multer.diskStorage({
-//   destination: (req, file, cb) => {
-//       cb(null, 'public/uploads');
-//   },
-//   filename: (req, file, cb) => {
-//       cb(null, Date.now() + file.originalname)
-//   }
-// });
 
-// Configurare Multer - Varianta 3 
 function fileFilter(req, file, cb){
   if (!file.originalname.match(/\.(jpeg|jpg|png|gif)$/)){
     cb(new Error('Nu poti uploada decat fisiere de imagine'), false);
@@ -85,12 +65,13 @@ function fileFilter(req, file, cb){
     cb(null, true);
   }
 }
+
+
 const storage = multer.memoryStorage();
-const upload = multer({ storage: storage, fileFilter: fileFilter, limits: {fileSize: 500000} });
+const upload = multer({ storage: storage, fileFilter: fileFilter, limits: {fileSize: 1000000} });
 
 
-// seteaza directorul "/public" pentru a afisa asset-uri statice
-app.use('/static', express.static('public'));
+
 
 /*******************   
 CUSTOM MIDDLEWARES
@@ -121,6 +102,7 @@ app.use( (req, res, next) => {
 app.use('/recipes', recipes);
 
 
+
 app.get('/', (req, res) => {
   res.locals.nume = req.cookies.nume;
   res.locals.img = req.cookies.img;
@@ -134,12 +116,11 @@ app.get('/hello', (req, res) => {
   });
 });
 
+
 app.post('/hello', upload.single('foto'), email_valid, name_valid, (req, res) => {  
   console.log(req.file.buffer);  
-
   // pune erorile din req in obiectul errors 
   const errors = validationResult(req);
-
   // 1) Daca nu exista erori => redirect cu mesaj flash
   if (errors.isEmpty()) { 
     req.session.flashMessage = 'Excelent, te-ai inscris cu email-ul ' + req.body.email;
@@ -151,11 +132,10 @@ app.post('/hello', upload.single('foto'), email_valid, name_valid, (req, res) =>
       console.log('The file has been saved!');
       // redirecteaza catre home, daca totul a mers ok
       res.redirect('/');
-      
     });
-    
   }  
-    // 2) Daca exista erori => afiseaza din nou formularul cu mesaje de eroare si datele completate
+    // 2) Daca exista erori => afiseaza din nou formularul cu mesaje de eroare si 
+    // datele completate
     else { 
     res.render('pages/hello', {
       data: req.body,
@@ -164,17 +144,16 @@ app.post('/hello', upload.single('foto'), email_valid, name_valid, (req, res) =>
   }
 });
 
-app.post('/goodbye', (req, res) => {
-  fs.unlink('public/uploads/' + req.cookies.img, (err) => {
-    if (err) throw err;
-    
-    console.log('public/uploads/' + req.cookies.img + ' was deleted');
-    res.clearCookie('nume');
-    res.clearCookie('img');
-    res.redirect('/hello');
-  });  
-});
-
+  app.post('/goodbye', (req, res) => {
+    fs.unlink('public/uploads/' + req.cookies.img, (err) => {
+      if (err) throw err;
+      
+      console.log('public/uploads/' + req.cookies.img + ' was deleted');
+      res.clearCookie('nume');
+      res.clearCookie('img');
+      res.redirect('/hello');
+    });  
+  });
 
 /*************/
 

@@ -1,8 +1,6 @@
 const express = require('express');
 const { check, validationResult } = require('express-validator/check'); // validare
 const queries = require('../data/recipes_queries.js');
-const multer = require('multer');
-const fs = require('fs');
 
 // initializeaza o aplicatie Express
 const router = express.Router();
@@ -11,20 +9,7 @@ const router = express.Router();
 router.use(express.json());
 
 /**
- * Configurare Multer - Varianta 3 
- */ 
-function fileFilter(req, file, cb){
-  if (!file.originalname.match(/\.(jpeg|jpg|png|gif)$/)){
-    cb(new Error('Nu poti uploada decat fisiere de imagine'), false);
-  } else {
-    cb(null, true);
-  }
-}
-const storage = multer.memoryStorage();
-const upload = multer({ storage: storage, fileFilter: fileFilter, limits: {fileSize: 500000} });
-
-/**
- * Ruta pentru indexul "Recipes"
+ * Ruta pentru indexul retelor
  */
 router.get('/', async (req, res) => { 
     const recipes = await queries.all_recipes();
@@ -34,16 +19,11 @@ router.get('/', async (req, res) => {
 /**
  * Ruta pentru adaugarea unei retete noi 
  */
-router.post('/create', upload.single('foto'), [
+router.post('/create', [
     check('title', 'Trebuie sa introduci un titlu').isLength({ min: 2 }),
     check('ingredients', 'Trebuie sa introduci ingrediente').isLength({ min: 2 }),
     check('directions', 'Trebuie sa introduci indicatiile de preparare').isLength({ min: 2 })
     ], (req, res) => {
-
-    console.log(req.headers['content-type']);
-    console.log(req.file.buffer);
-    console.log(req.body);
-
     // pune erorile din req in obiectul errors 
     const errors = validationResult(req);
     // 1) Daca nu exista erori => 
@@ -51,26 +31,22 @@ router.post('/create', upload.single('foto'), [
     //      - seteaza un flash message
     //      - trimite un raspuns json de succes
     if (errors.isEmpty()) {  
-      
-      queries.createRecipe(req.file.originalname, req.body.title, req.body.ingredients, req.body.directions)
+        queries.createRecipe(req.body.title, req.body.ingredients, req.body.directions)
         .then( data => {
-          req.session.flashMessage = 'Ai introdus o noua reteta';
-
-          fs.writeFile('public/uploads/'+ req.file.originalname, req.file.buffer, (err) =>{
-            if (err) throw err;
+            req.session.flashMessage = 'Ai introdus o noua reteta';
             res.json({ // trimite un raspuns JSON formularului din front-end
-              succes: true
+            succes: true
             });
-          })            
         })
-      .catch(error => console.log(error));
+        .catch(error => console.log(error));
     }  
     // 2) Daca exista erori => 
     //    - trimite un raspuns json de esec + datele completate + erorile 
     else {     
         res.json({
-          succes: false,
-          errors: errors.mapped()
+        succes: false,
+        form_data: req.body,
+        errors: errors.mapped()
         });
     }
     });
@@ -80,7 +56,7 @@ router.post('/create', upload.single('foto'), [
  */
 router.delete('/delete/:id', async (req, res) => { 
     try{
-        await queries.deleteRecipe(req.params.id);
+        await queries.deleteRecipe(req.params.id)
         req.session.flashMessage = 'Ai sters cu succes reteta ';
         res.sendStatus(200);
     } catch(err){

@@ -1,25 +1,21 @@
 const submit = document.getElementById("submit");
 const recipeList = document.getElementById("recipeList");
 const update = document.getElementById("edit-form-submit");
-const foto = document.getElementById("foto");
 
-/**
- * Actiunea de Save la formularul de "Create"
- */ 
+// actiunea de Save la formularul de "Edit"
 submit.addEventListener("click", (event)=>{
    
-    event.preventDefault(); //anuleaza efectul default al butonului    
-
-    const formData = new FormData();
+    event.preventDefault(); //anuleaza efectul default al butonului
     
-    formData.append('title', document.getElementById('title').value);
-    formData.append('ingredients', document.getElementById('ingredients').value);
-    formData.append('directions', document.getElementById('directions').value);
-    formData.append('foto', foto.files[0]);
-
+    // trimitele datele din formular prin POST, in format JSON
     fetch('/recipes/create', {
-      method: 'POST',
-      body: formData
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            title: document.getElementById('title').value,
+            ingredients: document.getElementById('ingredients').value,
+            directions: document.getElementById('directions').value
+        })
     })
     // parseaza raspunsul JSON primit
     .then(response => response.json())
@@ -55,13 +51,10 @@ submit.addEventListener("click", (event)=>{
     .catch(err => {
       console.log(err);
     });
-});
+})
 
-/**
- * Actiunea de click pe butonul "Delete" din lista de elemente
- * 
- * Este ascultat elementul parinte, care incadreaza toata lista de elemente HTML
- */
+// Actiunea pentru butonul de "Delete" 
+// este ascultat elementul parinte, care contine toata lista
 recipeList.addEventListener("click", (event)=>{
   if (event.target.value === "delete" ){
 
@@ -81,8 +74,8 @@ recipeList.addEventListener("click", (event)=>{
 });
 
 /**
- * Actiunea de click pe butonul "Edit", din lista 
- * Este ascultat elementul parinte, care contine toata lista
+ * Actiunea pentru butonul de "Edit" 
+ * este ascultat elementul parinte, care contine toata lista
  */ 
 recipeList.addEventListener("click", (event)=>{
   if (event.target.value === "edit" ){
@@ -93,25 +86,11 @@ recipeList.addEventListener("click", (event)=>{
     document.getElementById('edit-form-title').value = event.target.dataset.title;
     document.getElementById('edit-form-ingredients').value = event.target.dataset.ingredients;
     document.getElementById('edit-form-directions').value = event.target.dataset.directions;
-
-    const fotoBox = document.getElementById("fotoBox");
-
-
-    fotoBox.innerHTML = `
-      <hr>
-      <img src="static/uploads/${event.target.dataset.foto}" class="img-fluid" >
-      <div class="form-group">
-        <label for="foto" class="col-form-label">Schimba imaginea</label>
-        <input type="file" class="form-control" id="foto" name="foto" >
-      </div>
-      `;
   } 
 });
 
 
-/**
- * Actiunea de Save la formularul de "Edit"
- */
+//actiunea de Save la formularul de "Edit"
 
 update.addEventListener("click", (event)=>{
 
@@ -131,4 +110,5 @@ update.addEventListener("click", (event)=>{
         window.location.href = '/recipes';
       }     
     })
+
 })

@@ -10,20 +10,22 @@
           </div>     
         <% } %>
 
+   
         <% if (typeof nume !== 'undefined') { %>
           <h1>Welcome, <%= nume %>!</h1> 
           <img src="static/uploads/<%= img %>" class="my-2">
           <form action='/goodbye' method="POST">
             <button type="submit" class="btn btn-info">Goodbye!</button>
           </form>
-
         <% } else { %>
           <h1>Welcome, student!</h1>       
         <% } %>
           
+
       <div class="mt-4">
-        <img src= "/static/keep_calm.gif" >
-      </div>
+        <img src= "static/keep_calm.gif" > 
+        <!-- ce  e static? -->
+      </div> 
       
     </div>
   </div>

@@ -1,12 +1,10 @@
+
 <% include ../partials/meta.ejs %>
 <title>Formular</title>
 <% include ../partials/header.ejs %>
-
 <div class="row">
-
   <div class="col-md-6">
     <h1>Hello Page</h1>
-
     <% if ( Object.keys(errors).length > 0 ){ %>
       <div class="alert alert-danger" role="alert">
         <p>Au aparut urmatoarele erori:</p>
@@ -21,7 +19,6 @@
     <%        
       }
     %>
-
     <form action="/hello" method="POST" enctype="multipart/form-data" >
       <div class="form-group">
         <label for="nume">Nume</label>
@@ -36,14 +33,10 @@
         <input type="file" name="foto" id="foto">
       </div>
       <div id="info"></div>
-
       <button type="submit" class="btn">Submit</button>
       
     </form>
-
   </div>
-
 </div> <!-- row -->
 <script src="static/js/uploads.js"></script>
-
 <% include ../partials/footer.ejs %>
